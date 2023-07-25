@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "psychobot"
+version = "0.1.0"
+description = ""
+authors = ["olshanskyvv <90987935+olshanskyvv@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = {git = "https://github.com/aiogram/aiogram.git", tag = "v3.0.0b7"}
+asyncpg = "^0.28.0"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
