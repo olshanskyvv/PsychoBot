@@ -15,18 +15,6 @@ class BotUser:
     agreement: bool = False
     is_benefits: bool = False
 
-    # def __init__(self,
-    #              telegram_id: int,
-    #              full_name: str = None,
-    #              birth_date: date = None,
-    #              agreement: bool = False,
-    #              is_benefit: bool = False):
-    #     self.telegram_id = telegram_id
-    #     self.full_name = full_name
-    #     self.birth_date = birth_date
-    #     self.agreement = agreement
-    #     self.is_benefits = is_benefit
-
 
 @dataclasses.dataclass
 class Service:
