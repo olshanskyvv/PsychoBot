@@ -16,8 +16,9 @@ create table if not exists services (
 
 create table if not exists available_sessions (
     id uuid primary key default gen_random_uuid(),
-    date date unique,
-    time_begin time unique
+    date date,
+    time_begin time,
+    constraint unique_datetime unique (date, time_begin)
 );
 
 create table if not exists sessions(
