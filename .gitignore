@@ -2,3 +2,9 @@
 .DS_Store
 
 .env
+poetry.lock
+
+
+*.drawio
+*.drawio.bkp
+
