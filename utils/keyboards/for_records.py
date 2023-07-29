@@ -23,7 +23,7 @@ async def get_available_times_keyboard(date: datetime.date) -> InlineKeyboardMar
     builder = InlineKeyboardBuilder()
     av_times = await get_available_times_by_date(date)
     for av_time in av_times:
-        time_string = datetime.time.fromisoformat(av_time.time).strftime('%H:%M')
+        time_string = datetime.datetime.strptime(av_time.time, '%H.%M').strftime('%H:%M')
         builder.button(text=time_string,
                        callback_data=av_time)
     builder.button(text=f"Вернуться в начало{' (нет доступных записей)' if not av_times else ''}",
