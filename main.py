@@ -1,12 +1,10 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, Router, types
-from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram import Bot, Dispatcher
 
 import config
-from handlers import agreement
+from handlers import agreement, recording
 from db import driver
 
 
@@ -15,15 +13,12 @@ logging.basicConfig(level=logging.INFO)
 
 async def main() -> None:
 
-    # Dispatcher is a root router
     dp = Dispatcher()
-    # ... and all other routers should be attached to Dispatcher
     dp.include_router(agreement.router)
+    dp.include_router(recording.router)
 
-    # Initialize Bot instance with a default parse mode which will be passed to all API calls
     bot = Bot(config.TG_TOKEN, parse_mode="HTML")
     await driver.get_connection()
-    # And the run events dispatching
     await dp.start_polling(bot)
 
 

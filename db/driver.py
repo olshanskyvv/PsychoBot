@@ -8,6 +8,7 @@ from typing import Iterable, Optional
 from config import PG_USER, PG_HOST, PG_DATABASE_NAME
 import db.queries as queries
 from db.models import BotUser, Service, AvailableSession, Session, UUID
+from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory
 
 
 async def get_connection() -> asyncpg.Connection:
@@ -63,15 +64,23 @@ async def add_new_available_session(av_session: AvailableSession) -> AvailableSe
     return av_session
 
 
-async def add_new_session(session: Session) -> Session:
+# TODO: напоминание и ссылка на meet
+async def add_new_session(telegram_id: int = None,
+                          service_id: UUID = None,
+                          av_session_id: UUID = None,
+                          is_confirmed: bool = False,
+                          session: Session = None) -> UUID:
+    data = telegram_id, service_id, av_session_id, is_confirmed
+    if session:
+        data = session.user.telegram_id, session.service.id, session.available_session.id, session.is_confirmed
+
     conn = await get_connection()
     row = await conn.fetchrow("""
-    insert into sessions (id, bot_user_id, service_id, available_session_id) 
-    values (gen_random_uuid(), $1, $2, $3)
+    insert into sessions (id, bot_user_id, service_id, available_session_id, is_confirmed) 
+    values (gen_random_uuid(), $1, $2, $3, $4)
     returning id
-    """, session.user.telegram_id, session.service.id, session.available_session.id)
-    session.id = row['id']
-    return session
+    """, data)
+    return row['id']
 
 
 async def get_user_by_id(telegram_id: int) -> Optional[BotUser]:
@@ -120,3 +129,45 @@ async def set_agreement_true(telegram_id) -> None:
     set agreement = true 
     where telegram_id = $1
     ''', telegram_id)
+
+
+async def have_sessions(telegram_id) -> bool:
+    conn = await get_connection()
+    row = await conn.fetchrow('''
+    select exists(select *
+    from sessions ss
+    where ss.bot_user_id = $1)
+    ''', telegram_id)
+    return row.get('exists', False)
+
+
+async def get_available_dates() -> Iterable[DateCallbackFactory]:
+    conn = await get_connection()
+    rows = await conn.fetch('''
+    select date from available_sessions
+    where date = current_date + 1 and time_begin > current_time or
+          date > current_date + 1 and date <= current_date + 7
+    group by date order by date
+    ''')
+    # TODO: заменить на Iterable[DateCallbackFactory]
+    return map(lambda row: DateCallbackFactory(date=row.get('date', None)), rows)
+
+
+async def get_available_times_by_date(date: datetime.date) -> Iterable[TimeCallbackFactory]:
+    conn = await get_connection()
+    rows = await conn.fetch('''
+    select id, time_begin from available_sessions
+    where date = $1
+    order by time_begin
+    ''', date)
+    return map(lambda row: TimeCallbackFactory(uuid=row['id'], time=row['time_begin']), rows)
+
+
+async def get_id_of_primary_session_service() -> Optional[UUID]:
+    if not getattr(get_id_of_primary_session_service, 'primary_id', None):
+        conn = await get_connection()
+        row = await conn.fetchrow("""select id from services
+        where name = 'Первичная консультация'""")
+        get_id_of_primary_session_service.primary_id = row.get('id', None)
+
+    return get_id_of_primary_session_service.primary_id

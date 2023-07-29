@@ -1,13 +1,9 @@
-import logging
-from random import randint
-
-from aiogram import Router, types
+from aiogram import Router
 from aiogram.filters import Command, Text
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardMarkup, InlineKeyboardBuilder
 
 import templates.agreements as agreements
-from utils.keyboards import get_agreement_keyboard
+from utils.keyboards.for_commands import get_agreement_keyboard
 from db.using import get_agreement_by_id
 from db.driver import set_agreement_true
 
