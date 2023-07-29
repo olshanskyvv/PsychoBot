@@ -29,3 +29,20 @@ async def get_record_choosing_keyboard(telegram_id: int) -> InlineKeyboardMarkup
     builder.adjust(1)
     return builder.as_markup()
 
+
+def get_profile_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Заполнить профиль',
+                   callback_data='profile_fill')
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_profile_confirm_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Все верно',
+                   callback_data='profile_confirm')
+    builder.button(text='Есть ошибка',
+                   callback_data='profile_fill')
+    builder.adjust(1)
+    return builder.as_markup()

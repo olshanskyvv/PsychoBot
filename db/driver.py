@@ -165,3 +165,12 @@ async def get_id_of_primary_session_service() -> Optional[UUID]:
         get_id_of_primary_session_service.primary_id = row.get('id', None)
 
     return get_id_of_primary_session_service.primary_id
+
+
+async def set_name_and_birth_by_id(telegram_id: int, full_name: str, birth_date: datetime.date) -> None:
+    conn = await get_connection()
+    await conn.execute('''
+    update bot_users
+    set full_name = $1, birth_date = $2
+    where telegram_id = $3
+    ''', full_name, birth_date, telegram_id)

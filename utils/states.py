@@ -14,7 +14,7 @@ class SecondaryRecord(StatesGroup):
     confirm = State()
 
 
-class PersonalDataForm(StatesGroup):
+class ProfileForm(StatesGroup):
     input_full_name = State()
     input_birth_date = State()
     confirm = State()
