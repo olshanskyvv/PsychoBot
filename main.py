@@ -1,11 +1,11 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiogram import Dispatcher
 
-import config
-from handlers import agreement, recording
+import handlers
 from db import driver
+from utils import bot
 
 
 logging.basicConfig(level=logging.INFO)
@@ -14,10 +14,8 @@ logging.basicConfig(level=logging.INFO)
 async def main() -> None:
 
     dp = Dispatcher()
-    dp.include_router(agreement.router)
-    dp.include_router(recording.router)
+    dp.include_router(handlers.router)
 
-    bot = Bot(config.TG_TOKEN, parse_mode="HTML")
     await driver.get_connection()
     await dp.start_polling(bot)
 
