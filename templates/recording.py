@@ -10,7 +10,7 @@ def get_time_choice_message(date: datetime.date) -> str:
 
 
 def get_primary_confirmation_message(date: datetime.date, time: datetime.time) -> str:
-    return f"""Вы выбрали первичную сессию {date.day}.{date.month}.{date.year} в {time.hour}:{time.minute}.
+    return f"""Вы выбрали первичную сессию {date.strftime('%d.%m.%Y')} в {time.strftime('%H:%M')}.
 Она продлиться 30 минут."""
 
 
