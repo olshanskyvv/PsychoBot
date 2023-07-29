@@ -45,8 +45,8 @@ async def add_new_user(bot_user: BotUser) -> BotUser:
 async def add_new_service(service: Service) -> Service:
     conn = await get_connection()
     row = await conn.fetchrow("""
-        insert into services (id, name, cost, duration, is_for_benefits)
-        values (gen_random_uuid(), $1, $2, $3, $4)
+        insert into services (name, cost, duration, is_for_benefits)
+        values ($1, $2, $3, $4)
         returning id
     """, service.name, service.cost, service.duration, service.is_for_benefit)
     service.id = row.get('id', None)
@@ -56,8 +56,8 @@ async def add_new_service(service: Service) -> Service:
 async def add_new_available_session(av_session: AvailableSession) -> AvailableSession:
     conn = await get_connection()
     row = await conn.fetchrow("""
-    insert into available_sessions (id, date, time_begin)
-    values (gen_random_uuid(), $1, $2)
+    insert into available_sessions (date, time_begin)
+    values ($1, $2)
     returning id
     """, av_session.date, av_session.time_begin)
     av_session.id = row.get('id', None)
@@ -76,8 +76,8 @@ async def add_new_session(telegram_id: int = None,
 
     conn = await get_connection()
     row = await conn.fetchrow("""
-    insert into sessions (id, bot_user_id, service_id, available_session_id, is_confirmed) 
-    values (gen_random_uuid(), $1, $2, $3, $4)
+    insert into sessions (bot_user_id, service_id, available_session_id, is_confirmed) 
+    values ($1, $2, $3, $4)
     returning id
     """, data)
     return row['id']
@@ -149,7 +149,6 @@ async def get_available_dates() -> Iterable[DateCallbackFactory]:
           date > current_date + 1 and date <= current_date + 7
     group by date order by date
     ''')
-    # TODO: заменить на Iterable[DateCallbackFactory]
     return map(lambda row: DateCallbackFactory(date=row.get('date', None)), rows)
 
 
