@@ -16,14 +16,18 @@ create table if not exists services (
 
 create table if not exists available_sessions (
     id uuid primary key,
-    date date,
-    time_begin time
+    date date unique,
+    time_begin time unique
 );
 
 create table if not exists sessions(
     id uuid primary key,
     bot_user_id bigint references bot_users(telegram_id) not null,
     service_id uuid references services(id) not null,
-    available_session_id uuid references available_sessions(id) not null,
+    available_session_id uuid references available_sessions(id) not null unique,
     is_confirmed bool default false
 );
+
+insert into services (id, name, cost, duration)
+values (gen_random_uuid(), 'Первичная консультация', 0, 30)
+on conflict do nothing;
