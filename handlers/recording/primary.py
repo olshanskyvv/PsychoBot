@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import Router
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
@@ -36,11 +38,12 @@ async def primary_date_handler(callback: CallbackQuery,
                                callback_data: DateCallbackFactory,
                                state: FSMContext) -> None:
     user_data = await state.get_data()
-    user_data['date'] = callback_data.date
+    date = datetime.date.fromisoformat(callback_data.date)
+    user_data['date'] = date
     await state.set_data(user_data)
 
-    await callback.message.edit_text(text=get_time_choice_message(callback_data.date),
-                                     reply_markup=await get_available_times_keyboard(callback_data.date))
+    await callback.message.edit_text(text=get_time_choice_message(date),
+                                     reply_markup=await get_available_times_keyboard(date))
     await state.set_state(PrimaryRecord.choosing_time)
 
     await callback.answer()
@@ -52,7 +55,8 @@ async def primary_time_handler(callback: CallbackQuery,
                                callback_data: TimeCallbackFactory,
                                state: FSMContext) -> None:
     user_data = await state.get_data()
-    user_data['time'] = callback_data.time
+    time = datetime.datetime.strptime(callback_data.time, '%H.%M').time()
+    user_data['time'] = time
     user_data['uuid'] = callback_data.uuid
     await state.set_data(user_data)
 

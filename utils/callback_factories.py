@@ -6,10 +6,10 @@ from db.models import UUID
 
 
 class DateCallbackFactory(CallbackData, prefix='fabdate'):
-    date: datetime.date
+    date: str
 
 
 class TimeCallbackFactory(CallbackData, prefix='fabtime'):
     uuid: UUID
-    time: datetime.time
+    time: str
 

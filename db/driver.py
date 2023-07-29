@@ -68,18 +68,13 @@ async def add_new_available_session(av_session: AvailableSession) -> AvailableSe
 async def add_new_session(telegram_id: int = None,
                           service_id: UUID = None,
                           av_session_id: UUID = None,
-                          is_confirmed: bool = False,
-                          session: Session = None) -> UUID:
-    data = telegram_id, service_id, av_session_id, is_confirmed
-    if session:
-        data = session.user.telegram_id, session.service.id, session.available_session.id, session.is_confirmed
-
+                          is_confirmed: bool = False) -> UUID:
     conn = await get_connection()
     row = await conn.fetchrow("""
     insert into sessions (bot_user_id, service_id, available_session_id, is_confirmed) 
     values ($1, $2, $3, $4)
     returning id
-    """, data)
+    """, telegram_id, service_id, av_session_id, is_confirmed)
     return row['id']
 
 
@@ -149,7 +144,7 @@ async def get_available_dates() -> Iterable[DateCallbackFactory]:
           date > current_date + 1 and date <= current_date + 7
     group by date order by date
     ''')
-    return map(lambda row: DateCallbackFactory(date=row.get('date', None)), rows)
+    return map(lambda row: DateCallbackFactory(date=row.get('date', None).isoformat()), rows)
 
 
 async def get_available_times_by_date(date: datetime.date) -> Iterable[TimeCallbackFactory]:
@@ -159,7 +154,7 @@ async def get_available_times_by_date(date: datetime.date) -> Iterable[TimeCallb
     where date = $1
     order by time_begin
     ''', date)
-    return map(lambda row: TimeCallbackFactory(uuid=row['id'], time=row['time_begin']), rows)
+    return map(lambda row: TimeCallbackFactory(uuid=row['id'], time=row['time_begin'].strftime('%H.%M')), rows)
 
 
 async def get_id_of_primary_session_service() -> Optional[UUID]:

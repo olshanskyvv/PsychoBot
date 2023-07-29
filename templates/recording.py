@@ -11,9 +11,9 @@ def get_time_choice_message(date: datetime.date) -> str:
 
 def get_primary_confirmation_message(date: datetime.date, time: datetime.time) -> str:
     return f"""Вы выбрали первичную сессию {date.day}.{date.month}.{date.year} в {time.hour}:{time.minute}.
-    Она продлиться 30 минут."""
+Она продлиться 30 минут."""
 
 
 primary_record_confirmed = """Запись зафиксирована! 
     
-    Перед сессией Вам придет напоминание со ссылкой на Google Meet конференцию"""
+Перед сессией Вам придет напоминание со ссылкой на Google Meet конференцию"""
