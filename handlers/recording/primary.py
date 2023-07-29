@@ -74,6 +74,7 @@ async def primary_confirm_handler(callback: CallbackQuery,
                                   state: FSMContext) -> None:
     user_date = await state.get_data()
     await add_new_primary_session(callback.from_user.id, user_date['uuid'])
+    await state.clear()
 
     await callback.message.delete_reply_markup()
     await callback.message.edit_text(text=primary_record_confirmed)
