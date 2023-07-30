@@ -1,5 +1,7 @@
 import datetime
 
+from db.models import Minutes
+
 general_choice = 'Выберите тип записи'
 
 date_choice = "Выберите удобную дату для сессии"
@@ -9,14 +11,9 @@ def get_time_choice_message(date: datetime.date) -> str:
     return f"Выберите удобное время сессии {date.day}.{date.month}.{date.year}"
 
 
-def get_primary_confirmation_message(date: datetime.date, time: datetime.time) -> str:
-    return f"""Вы выбрали первичную сессию {date.strftime('%d.%m.%Y')} в {time.strftime('%H:%M')}.
-Она продлиться 30 минут."""
-
-
-def get_secondary_confirmation_message(date: datetime.date, time: datetime.time) -> str:
-    return f"""Вы выбрали вторичную сессию {date.strftime('%d.%m.%Y')} в {time.strftime('%H:%M')}.
-Она продлиться 50 минут."""
+def get_confirmation_message(date: datetime.date, time: datetime.time, duration: Minutes) -> str:
+    return f"""Вы выбрали сессию {date.strftime('%d.%m.%Y')} в {time.strftime('%H:%M')}.
+Она продлиться {duration} минут."""
 
 
 record_confirmed = """Запись зафиксирована! 

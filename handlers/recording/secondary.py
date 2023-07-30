@@ -11,7 +11,8 @@ from templates.recording import (
     profile_is_empty,
     service_choice,
     date_choice,
-    get_secondary_confirmation_message, record_confirmed
+    get_confirmation_message,
+    record_confirmed
 )
 from utils.keyboards.for_records import get_services_keyboard, get_available_dates_keyboard
 from utils.callback_factories import ServiceCallbackFactory, DateCallbackFactory, TimeCallbackFactory
@@ -71,7 +72,8 @@ async def primary_time_handler(callback: CallbackQuery,
                                 callback_data,
                                 state,
                                 SecondaryRecord,
-                                get_secondary_confirmation_message)
+                                get_confirmation_message,
+                                50)
 
 
 @router.callback_query(SecondaryRecord.confirm,

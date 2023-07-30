@@ -10,14 +10,11 @@ from utils.callback_factories import DateCallbackFactory, TimeCallbackFactory
 from utils.states import PrimaryRecord
 from templates.recording import (
     date_choice,
-    get_time_choice_message,
-    get_primary_confirmation_message,
+    get_confirmation_message,
     record_confirmed
 )
 from utils.keyboards.for_records import (
-    get_available_dates_keyboard,
-    get_available_times_keyboard,
-    get_record_confirmation_keyboard
+    get_available_dates_keyboard
 )
 from db.using import add_new_primary_session
 
@@ -53,7 +50,8 @@ async def primary_time_handler(callback: CallbackQuery,
                                 callback_data,
                                 state,
                                 PrimaryRecord,
-                                get_primary_confirmation_message)
+                                get_confirmation_message,
+                                30)
 
 
 @router.callback_query(PrimaryRecord.confirm,

@@ -2,9 +2,9 @@ import datetime
 from typing import Callable, Type
 
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup
 from aiogram.types import CallbackQuery
 
+from db.models import Minutes
 from templates.recording import get_time_choice_message, get_primary_confirmation_message
 from utils.callback_factories import DateCallbackFactory, TimeCallbackFactory
 from utils.keyboards.for_records import get_available_times_keyboard, get_record_confirmation_keyboard
@@ -31,7 +31,8 @@ async def process_time_callback(callback: CallbackQuery,
                                 callback_data: TimeCallbackFactory,
                                 state: FSMContext,
                                 states_group: Type[PrimaryRecord | SecondaryRecord],
-                                message_text_getter: Callable[[datetime.date, datetime.time], str]) -> None:
+                                message_text_getter: Callable[[datetime.date, datetime.time, Minutes], str],
+                                duration: Minutes) -> None:
     user_data = await state.get_data()
     time = datetime.datetime.strptime(callback_data.time, '%H.%M').time()
     user_data['time'] = time
@@ -39,7 +40,7 @@ async def process_time_callback(callback: CallbackQuery,
     await state.set_data(user_data)
 
     await callback.message.edit_text(
-        text=message_text_getter(user_data['date'], user_data['time']),
+        text=message_text_getter(user_data['date'], user_data['time'], duration),
         reply_markup=await get_record_confirmation_keyboard())
     await state.set_state(states_group.confirm)
 
