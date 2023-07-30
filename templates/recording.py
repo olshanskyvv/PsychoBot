@@ -14,6 +14,19 @@ def get_primary_confirmation_message(date: datetime.date, time: datetime.time) -
 Она продлиться 30 минут."""
 
 
-primary_record_confirmed = """Запись зафиксирована! 
+def get_secondary_confirmation_message(date: datetime.date, time: datetime.time) -> str:
+    return f"""Вы выбрали вторичную сессию {date.strftime('%d.%m.%Y')} в {time.strftime('%H:%M')}.
+Она продлиться 50 минут."""
+
+
+record_confirmed = """Запись зафиксирована! 
     
 Перед сессией Вам придет напоминание со ссылкой на Google Meet конференцию"""
+
+profile_is_empty = """Для записи на вторичную сессию необходимо заполнить ФИО и дату рождения в профиле.
+
+Это можно сделать по команде /profile"""
+
+service_choice = """Выберите тип консультации"""
+
+

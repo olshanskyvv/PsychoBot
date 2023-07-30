@@ -37,8 +37,8 @@ async def profile_fill_handler(callback: CallbackQuery, state: FSMContext) -> No
     await state.set_data(user_data)
     await state.set_state(ProfileForm.input_full_name)
 
-    await callback.message.delete_reply_markup()
-    await callback.message.edit_text(text='Введите свои ФИО (полностью)')
+    await callback.message.edit_text(text='Введите свои ФИО (полностью)',
+                                     reply_markup=None)
 
     await callback.answer()
 
@@ -89,9 +89,9 @@ async def profile_confirm_handler(callback: CallbackQuery, state: FSMContext) ->
                                    birth_date=user_data['birth_date'])
     await state.clear()
 
-    await callback.message.delete_reply_markup()
     await callback.message.edit_text(text=get_profile_data_message(full_name=user_data['full_name'],
-                                                                   birth_date=user_data['birth_date']))
+                                                                   birth_date=user_data['birth_date']),
+                                     reply_markup=None)
 
 
 

@@ -3,7 +3,12 @@ import datetime
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from db.driver import get_available_dates, get_available_times_by_date
+from db.driver import (
+    get_available_dates,
+    get_available_times_by_date,
+    get_services_by_benefits
+)
+from utils.callback_factories import ServiceCallbackFactory
 
 
 async def get_available_dates_keyboard() -> InlineKeyboardMarkup:
@@ -37,6 +42,18 @@ async def get_record_confirmation_keyboard() -> InlineKeyboardMarkup:
     builder.button(text='Подтвердить',
                    callback_data='recording_confirm')
     builder.button(text='Вернуться в начало',
+                   callback_data='recording_cancel')
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+async def get_services_keyboard(is_for_benefits: bool) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    services = await get_services_by_benefits(is_for_benefits)
+    for service in services:
+        builder.button(text=f'{service.name}',
+                       callback_data=ServiceCallbackFactory(id=service.id))
+    builder.button(text=f'Вернуться в начало',
                    callback_data='recording_cancel')
     builder.adjust(1)
     return builder.as_markup()

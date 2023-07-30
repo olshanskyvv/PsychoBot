@@ -8,7 +8,7 @@ from typing import Iterable, Optional
 from config import PG_USER, PG_HOST, PG_DATABASE_NAME
 import db.queries as queries
 from db.models import BotUser, Service, AvailableSession, Session, UUID
-from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory
+from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory, ServiceCallbackFactory
 
 
 async def get_connection() -> asyncpg.Connection:
@@ -89,9 +89,13 @@ async def get_user_by_id(telegram_id: int) -> Optional[BotUser]:
 async def get_service_by_id(service_id: UUID) -> Service:
     conn = await get_connection()
     row = await conn.fetchrow("""
-    select * from services where id = $1
+    select id, name, cost, duration, is_for_benefits from services where id = $1
     """, service_id)
-    return Service(**row)
+    return Service(id=row['id'],
+                   name=row['name'],
+                   cost=row['cost'],
+                   duration=row['duration'],
+                   is_for_benefit=row['is_for_benefits'])
 
 
 async def get_available_sessions_by_id(av_session_id: UUID) -> AvailableSession:
@@ -140,8 +144,9 @@ async def get_available_dates() -> Iterable[DateCallbackFactory]:
     conn = await get_connection()
     rows = await conn.fetch('''
     select date from available_sessions
-    where date = current_date + 1 and time_begin > current_time or
-          date > current_date + 1 and date <= current_date + 7
+    where (date = current_date + 1 and time_begin > current_time or
+          date > current_date + 1 and date <= current_date + 7) and
+        id not in (select available_session_id from sessions)
     group by date order by date
     ''')
     return map(lambda row: DateCallbackFactory(date=row.get('date', None).isoformat()), rows)
@@ -151,7 +156,8 @@ async def get_available_times_by_date(date: datetime.date) -> Iterable[TimeCallb
     conn = await get_connection()
     rows = await conn.fetch('''
     select id, time_begin from available_sessions
-    where date = $1
+    where date = $1 and
+          id not in (select available_session_id from sessions)
     order by time_begin
     ''', date)
     return map(lambda row: TimeCallbackFactory(uuid=row['id'], time=row['time_begin'].strftime('%H.%M')), rows)
@@ -174,3 +180,17 @@ async def set_name_and_birth_by_id(telegram_id: int, full_name: str, birth_date:
     set full_name = $1, birth_date = $2
     where telegram_id = $3
     ''', full_name, birth_date, telegram_id)
+
+
+async def get_services_by_benefits(is_for_benefits: bool) -> Iterable[Service]:
+    conn = await get_connection()
+    rows = await conn.fetch("""
+    select id, name, cost, duration from services
+    where cost > 0 and is_for_benefits = $1
+    order by name
+    """, is_for_benefits)
+    return map(lambda row: Service(id=row['id'],
+                                   name=row['name'],
+                                   cost=row['cost'],
+                                   duration=row['duration'],
+                                   is_for_benefit=is_for_benefits), rows)

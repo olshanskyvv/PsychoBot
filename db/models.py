@@ -24,6 +24,9 @@ class Service:
     id: Optional[UUID] = None
     is_for_benefit: bool = False
 
+    def __str__(self):
+        return f'{self.name}: {self.cost} руб'
+
 
 @dataclasses.dataclass
 class AvailableSession:
