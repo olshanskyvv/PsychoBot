@@ -25,7 +25,11 @@ select id from services
 where name = 'Первичная консультация';
 
 select id, name, cost, duration from services
-where cost > 0 and is_for_benefits = $1
+where cost > 0 and is_for_benefits = $1 and is_deleted = false
+order by name;
+
+select id, name, cost, duration, is_for_benefits from services
+where cost > 0 and is_deleted = false
 order by name;
 
 select ss.id as id,

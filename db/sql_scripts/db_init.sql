@@ -11,7 +11,8 @@ create table if not exists services (
   name varchar(255) not null,
   cost integer not null,
   duration integer not null,
-  is_for_benefits bool default false
+  is_for_benefits bool default false,
+  is_deleted bool default false
 );
 
 create table if not exists available_sessions (

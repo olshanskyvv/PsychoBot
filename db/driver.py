@@ -186,7 +186,7 @@ async def get_services_by_benefits(is_for_benefits: bool) -> Iterable[Service]:
     conn = await get_connection()
     rows = await conn.fetch("""
     select id, name, cost, duration from services
-    where cost > 0 and is_for_benefits = $1
+    where cost > 0 and is_for_benefits = $1 and is_deleted = false
     order by name
     """, is_for_benefits)
     return map(lambda row: Service(id=row['id'],
@@ -230,3 +230,35 @@ async def update_av_session_by_id(session_id: UUID, av_id: UUID) -> None:
 set available_session_id = $1
 where id = $2
     """, av_id, session_id)
+
+
+async def get_all_services() -> Iterable[Service]:
+    conn = await get_connection()
+    rows = await conn.fetch("""
+    select id, name, cost, duration, is_for_benefits from services
+    where cost > 0 and is_deleted = false order by name;
+    """)
+    return map(lambda row: Service(id=row.get('id'),
+                                   name=row.get('name'),
+                                   cost=row.get('cost'),
+                                   duration=row.get('duration'),
+                                   is_for_benefit=row.get('is_for_benefit')), rows)
+
+
+async def delete_service_by_id(service_id: UUID) -> None:
+    conn = await get_connection()
+    await conn.execute("""
+    update services
+    set is_deleted = True
+    where id = $1
+    """, service_id)
+
+
+async def update_service_filed(service_id: UUID, field: str, value: str | int | bool) -> None:
+    conn = await get_connection()
+    await conn.execute(f"""
+    update services
+    set {field} = $1
+    where id = $2
+    """, value, service_id)
+

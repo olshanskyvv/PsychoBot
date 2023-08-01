@@ -20,6 +20,17 @@ class ServiceCallbackFactory(CallbackData, prefix='fabservice'):
     id: UUID
 
 
+class ServiceAction(Enum):
+    EDIT = 'edit'
+    DELETE_CONFIRM = 'delete_confirm'
+    DELETE = 'delete'
+
+
+class ServiceActionFactory(CallbackData, prefix='fabactserv'):
+    id: UUID
+    action: ServiceAction
+
+
 class SessionAction(Enum):
     CANCEL = 'cancel'
     CANCEL_CONFIRM = 'confirm'
@@ -31,4 +42,21 @@ class SessionActionFactory(CallbackData, prefix='fabsession'):
     id: UUID
     duration: Minutes
     action: SessionAction
+
+
+class ServiceAttribute(Enum):
+    NAME = 'name'
+    COST = 'cost'
+    DURATION = 'duration'
+    BENEFIT = 'is_for_benefits'
+
+
+class ServiceEditFactory(CallbackData, prefix='fabservedit'):
+    id: UUID
+    field: ServiceAttribute
+
+
+class BenefitEditFactory(CallbackData, prefix='fabbenefit'):
+    id: UUID
+    value: bool
 

@@ -25,3 +25,13 @@ class SessionMove(StatesGroup):
     choosing_time = State()
     confirm = State()
 
+
+class ServiceEdit(StatesGroup):
+    input_value = State()
+
+
+class ServiceForm(StatesGroup):
+    input_name = State()
+    input_cost = State()
+    input_duration = State()
+    input_benefit = State()
