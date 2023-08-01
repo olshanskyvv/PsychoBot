@@ -46,7 +46,7 @@ async def secondary_service_handler(callback: CallbackQuery,
     await state.set_data(user_data)
 
     await callback.message.edit_text(text=date_choice,
-                                     reply_markup=await get_available_dates_keyboard())
+                                     reply_markup=await get_available_dates_keyboard('recording_cancel'))
     await state.set_state(SecondaryRecord.choosing_date)
 
     await callback.answer()
@@ -54,26 +54,28 @@ async def secondary_service_handler(callback: CallbackQuery,
 
 @router.callback_query(SecondaryRecord.choosing_date,
                        DateCallbackFactory.filter())
-async def primary_date_handler(callback: CallbackQuery,
-                               callback_data: DateCallbackFactory,
-                               state: FSMContext) -> None:
+async def secondary_date_handler(callback: CallbackQuery,
+                                 callback_data: DateCallbackFactory,
+                                 state: FSMContext) -> None:
     await process_data_callback(callback,
                                 callback_data,
                                 state,
-                                SecondaryRecord)
+                                SecondaryRecord,
+                                'recording_cancel')
 
 
 @router.callback_query(SecondaryRecord.choosing_time,
                        TimeCallbackFactory.filter())
-async def primary_time_handler(callback: CallbackQuery,
-                               callback_data: TimeCallbackFactory,
-                               state: FSMContext) -> None:
+async def secondary_time_handler(callback: CallbackQuery,
+                                 callback_data: TimeCallbackFactory,
+                                 state: FSMContext) -> None:
     await process_time_callback(callback,
                                 callback_data,
                                 state,
                                 SecondaryRecord,
                                 get_confirmation_message,
-                                50)
+                                50,
+                                'recording_cancel')
 
 
 @router.callback_query(SecondaryRecord.confirm,
@@ -90,6 +92,3 @@ async def secondary_confirm_handler(callback: CallbackQuery,
                                      reply_markup=None)
 
     await callback.answer()
-
-
-

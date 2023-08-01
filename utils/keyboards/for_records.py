@@ -11,7 +11,7 @@ from db.driver import (
 from utils.callback_factories import ServiceCallbackFactory
 
 
-async def get_available_dates_keyboard() -> InlineKeyboardMarkup:
+async def get_available_dates_keyboard(cancel_text: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     av_dates = await get_available_dates()
     for av_date in av_dates:
@@ -19,12 +19,12 @@ async def get_available_dates_keyboard() -> InlineKeyboardMarkup:
         builder.button(text=date_string,
                        callback_data=av_date)
     builder.button(text=f"Вернуться в начало{' (нет доступных записей)' if not av_dates else ''}",
-                   callback_data='recording_cancel')
+                   callback_data=cancel_text)
     builder.adjust(1)
     return builder.as_markup()
 
 
-async def get_available_times_keyboard(date: datetime.date) -> InlineKeyboardMarkup:
+async def get_available_times_keyboard(date: datetime.date, cancel_text: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     av_times = await get_available_times_by_date(date)
     for av_time in av_times:
@@ -32,17 +32,17 @@ async def get_available_times_keyboard(date: datetime.date) -> InlineKeyboardMar
         builder.button(text=time_string,
                        callback_data=av_time)
     builder.button(text=f"Вернуться в начало{' (нет доступных записей)' if not av_times else ''}",
-                   callback_data='recording_cancel')
+                   callback_data=cancel_text)
     builder.adjust(1)
     return builder.as_markup()
 
 
-async def get_record_confirmation_keyboard() -> InlineKeyboardMarkup:
+async def get_record_confirmation_keyboard(cancel_text: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text='Подтвердить',
                    callback_data='recording_confirm')
     builder.button(text='Вернуться в начало',
-                   callback_data='recording_cancel')
+                   callback_data=cancel_text)
     builder.adjust(1)
     return builder.as_markup()
 

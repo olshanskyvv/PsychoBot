@@ -7,7 +7,7 @@ from typing import Iterable, Optional
 
 from config import PG_USER, PG_HOST, PG_DATABASE_NAME
 import db.queries as queries
-from db.models import BotUser, Service, AvailableSession, Session, UUID
+from db.models import BotUser, Service, AvailableSession, Session, UUID, SessionView
 from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory, ServiceCallbackFactory
 
 
@@ -194,3 +194,39 @@ async def get_services_by_benefits(is_for_benefits: bool) -> Iterable[Service]:
                                    cost=row['cost'],
                                    duration=row['duration'],
                                    is_for_benefit=is_for_benefits), rows)
+
+
+async def get_users_nearest_session(telegram_id: int) -> Optional[SessionView]:
+    conn = await get_connection()
+    row = await conn.fetchrow("""
+    select ss.id as id,
+           s.name as name,
+           av_s.date as date,
+           av_s.time_begin as time,
+           ss.is_confirmed as is_confirmed,
+           s.duration as duration
+    from sessions ss
+    join available_sessions av_s on av_s.id = ss.available_session_id
+    join services s on s.id = ss.service_id
+    where (av_s.date = current_date and av_s.time_begin > current_time
+    or av_s.date > current_date)
+    and ss.bot_user_id = $1
+    """, telegram_id)
+    return SessionView(**row) if row else None
+
+
+async def delete_session_by_id(session_id: UUID) -> None:
+    conn = await get_connection()
+    await conn.execute("""
+    delete from sessions
+    where id = $1
+    """, session_id)
+
+
+async def update_av_session_by_id(session_id: UUID, av_id: UUID) -> None:
+    conn = await get_connection()
+    await conn.execute("""
+    update sessions
+set available_session_id = $1
+where id = $2
+    """, av_id, session_id)

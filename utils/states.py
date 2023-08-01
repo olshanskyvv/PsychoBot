@@ -18,3 +18,10 @@ class ProfileForm(StatesGroup):
     input_full_name = State()
     input_birth_date = State()
     confirm = State()
+
+
+class SessionMove(StatesGroup):
+    choosing_date = State()
+    choosing_time = State()
+    confirm = State()
+

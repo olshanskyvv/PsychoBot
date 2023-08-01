@@ -1,7 +1,8 @@
 import dataclasses
+import datetime
 import uuid
 from datetime import date, time
-from typing import Optional
+from typing import Optional, NamedTuple
 
 UUID = uuid.UUID
 Minutes = int
@@ -42,3 +43,12 @@ class Session:
     available_session: AvailableSession
     id: Optional[UUID] = None
     is_confirmed: bool = False
+
+
+class SessionView(NamedTuple):
+    id: UUID
+    name: str
+    date: datetime.date
+    time: datetime.time
+    is_confirmed: bool
+    duration: Minutes

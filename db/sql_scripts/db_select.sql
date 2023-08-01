@@ -26,4 +26,16 @@ where name = 'Первичная консультация';
 
 select id, name, cost, duration from services
 where cost > 0 and is_for_benefits = $1
-order by name
+order by name;
+
+select ss.id as id,
+       s.name as name,
+       av_s.date as date,
+       av_s.time_begin as time,
+       ss.is_confirmed as is_confirmed
+from sessions ss
+join available_sessions av_s on av_s.id = ss.available_session_id
+join services s on s.id = ss.service_id
+where (av_s.date = current_date and av_s.time_begin > current_time
+or av_s.date > current_date)
+and ss.bot_user_id = $1;

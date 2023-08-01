@@ -24,7 +24,7 @@ router = Router()
 @router.callback_query(Text('primary'))
 async def primary_session_handler(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.edit_text(text=date_choice,
-                                     reply_markup=await get_available_dates_keyboard())
+                                     reply_markup=await get_available_dates_keyboard('recording_cancel'))
     await state.set_state(PrimaryRecord.choosing_date)
 
     await callback.answer()
@@ -38,7 +38,8 @@ async def primary_date_handler(callback: CallbackQuery,
     await process_data_callback(callback,
                                 callback_data,
                                 state,
-                                PrimaryRecord)
+                                PrimaryRecord,
+                                'recording_cancel')
 
 
 @router.callback_query(PrimaryRecord.choosing_time,
@@ -51,7 +52,8 @@ async def primary_time_handler(callback: CallbackQuery,
                                 state,
                                 PrimaryRecord,
                                 get_confirmation_message,
-                                30)
+                                30,
+                                'recording_cancel')
 
 
 @router.callback_query(PrimaryRecord.confirm,
