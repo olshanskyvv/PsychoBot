@@ -10,8 +10,8 @@ from db.driver import set_agreement_true
 router = Router()
 
 
-@router.message(Command(commands=['start']))
-async def start_handler(message: Message) -> None:
+@router.message(Command('agreement'))
+async def agreement_command_handler(message: Message) -> None:
     keyboard = None
     result = await get_agreement_by_id(message.from_user.id)
     if not result:

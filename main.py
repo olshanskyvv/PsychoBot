@@ -16,7 +16,9 @@ async def set_commands() -> None:
     # Set default commands
     default_commands = [
             BotCommand(command='start',
-                       description='Запуск бота и пользовательское соглашение'),
+                       description='Запуск бота и доступные команды'),
+            BotCommand(command='agreement',
+                       description='Пользовательское соглашение'),
             BotCommand(command='profile',
                        description='Просмотр и заполнение персональных данных'),
             BotCommand(command='session',
@@ -34,6 +36,8 @@ async def set_commands() -> None:
                    description='Просмотр ближайших сессий'),
         BotCommand(command='services',
                    description='Просмотр и изменение услуг'),
+        BotCommand(command='timetable',
+                   description='Просмотр и изменение сетки расписания'),
     ]
     await bot.set_my_commands(
         [*default_commands, *admin_commands],

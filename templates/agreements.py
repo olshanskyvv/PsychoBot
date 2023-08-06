@@ -5,3 +5,11 @@ agreement_confirm = '''Спасибо, что выбрали нашего бот
 
 agreement_already_confirmed = '''Вы уже приняли пользовательское соглашение. 
 Еще раз его принимать нет необходимости)'''
+
+
+start = """Доступные команды:
+/start
+/agreement
+/profile
+/session
+/new_session"""
