@@ -11,6 +11,7 @@ Minutes = int
 @dataclasses.dataclass
 class BotUser:
     telegram_id: int
+    username: str
     full_name: str = None
     birth_date: date = None
     agreement: bool = False

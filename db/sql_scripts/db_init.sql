@@ -1,5 +1,6 @@
 create table if not exists bot_users (
   telegram_id bigint primary key,
+  username varchar(255) null,
   full_name varchar(255) null,
   birth_date date null,
   agreement bool default false,

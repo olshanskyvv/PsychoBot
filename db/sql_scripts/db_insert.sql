@@ -1,5 +1,6 @@
-insert into bot_users (telegram_id)
-values ($1);
+insert into bot_users (telegram_id, username)
+values ($1, $2)
+on conflict do nothing;
 
 insert into services (name, cost, duration, is_for_benefits)
 values ($1, $2, $3, $4)

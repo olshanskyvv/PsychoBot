@@ -37,8 +37,10 @@ async def init_db_if_empty() -> None:
 async def add_new_user(bot_user: BotUser) -> BotUser:
     conn = await get_connection()
     await conn.execute('''
-        insert into bot_users (telegram_id) values ($1)
-    ''', bot_user.telegram_id)
+        insert into bot_users (telegram_id, username)
+        values ($1, $2)
+        on conflict do nothing;
+    ''', bot_user.telegram_id, bot_user.username)
     return bot_user
 
 
