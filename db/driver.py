@@ -7,7 +7,16 @@ from typing import Iterable, Optional
 
 from config import PG_USER, PG_HOST, PG_DATABASE_NAME
 import db.queries as queries
-from db.models import BotUser, Service, AvailableSession, Session, UUID, SessionView
+from db.models import (
+    BotUser,
+    Service,
+    AvailableSession,
+    Session,
+    UUID,
+    SessionView,
+    SessionLiteView,
+    SessionFullView
+)
 from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory, ServiceCallbackFactory
 
 
@@ -154,14 +163,18 @@ async def get_available_dates() -> Iterable[DateCallbackFactory]:
     return map(lambda row: DateCallbackFactory(date=row.get('date', None).isoformat()), rows)
 
 
-async def get_available_times_by_date(date: datetime.date) -> Iterable[TimeCallbackFactory]:
+async def get_available_times_by_date(date: datetime.date,
+                                      time: Optional[datetime.time] = None) -> Iterable[TimeCallbackFactory]:
+    if not time:
+        time = datetime.time(hour=0,
+                             minute=0)
     conn = await get_connection()
     rows = await conn.fetch('''
     select id, time_begin from available_sessions
-    where date = $1 and
+    where date = $1 and time_begin > $2 and
           id not in (select available_session_id from sessions)
     order by time_begin
-    ''', date)
+    ''', date, time)
     return map(lambda row: TimeCallbackFactory(uuid=row['id'], time=row['time_begin'].strftime('%H.%M')), rows)
 
 
@@ -263,4 +276,56 @@ async def update_service_filed(service_id: UUID, field: str, value: str | int | 
     set {field} = $1
     where id = $2
     """, value, service_id)
+
+
+async def get_session_days() -> Iterable[datetime.date]:
+    conn = await get_connection()
+    rows = await conn.fetch("""
+    select date from available_sessions
+    where
+        id in (select available_session_id from sessions) and
+        (date = current_date and time_begin > current_time or date > current_date)
+    group by date order by date;""")
+    return map(lambda row: row['date'], rows)
+
+
+async def get_sessions_by_date_and_time(date: datetime.date,
+                                        time: Optional[datetime.time] = None) -> Iterable[SessionLiteView]:
+    if not time:
+        time = datetime.time(hour=0,
+                             minute=0)
+    conn = await get_connection()
+    rows = await conn.fetch("""
+    select ss.id as id, s.name as name, av.time_begin as time
+    from sessions ss
+    join services s on s.id = ss.service_id
+    join available_sessions av on av.id = ss.available_session_id
+    where av.date = $1 and av.time_begin > $2
+    order by av.time_begin
+    """, date, time)
+    return map(lambda row: SessionLiteView(id=row['id'],
+                                           name=row['name'],
+                                           date=date,
+                                           time=row['time']), rows)
+
+
+async def get_full_session_by_id(session_id: UUID) -> SessionFullView:
+    conn = await get_connection()
+    row = await conn.fetchrow("""
+    select
+        ss.id as id,
+        bu.username as username,
+        bu.full_name as full_name,
+        bu.birth_date as user_birth,
+        s.name as service_name,
+        av.date as date,
+        av.time_begin as time,
+        ss.is_confirmed as is_confirmed
+    from sessions ss
+    join bot_users bu on ss.bot_user_id = bu.telegram_id
+    join services s on s.id = ss.service_id
+    join available_sessions av on av.id = ss.available_session_id
+    where ss.id = $1
+    """, session_id)
+    return SessionFullView(**row)
 

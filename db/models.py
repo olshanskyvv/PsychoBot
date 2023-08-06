@@ -53,3 +53,21 @@ class SessionView(NamedTuple):
     time: datetime.time
     is_confirmed: bool
     duration: Minutes
+
+
+class SessionLiteView(NamedTuple):
+    id: UUID
+    name: str
+    date: datetime.date
+    time: datetime.time
+
+
+class SessionFullView(NamedTuple):
+    id: UUID
+    username: str
+    full_name: str
+    user_birth: datetime.date
+    service_name: str
+    date: datetime.date
+    time: datetime.time
+    is_confirmed: bool

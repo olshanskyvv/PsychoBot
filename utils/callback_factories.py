@@ -1,10 +1,8 @@
-import datetime
 from enum import Enum
-from typing import Literal
 
 from aiogram.filters.callback_data import CallbackData
 
-from db.models import UUID, Service, Minutes
+from db.models import UUID, Minutes
 
 
 class DateCallbackFactory(CallbackData, prefix='FabDate'):
@@ -59,4 +57,13 @@ class ServiceEditFactory(CallbackData, prefix='FabServEdit'):
 class BenefitEditFactory(CallbackData, prefix='FabBenefit'):
     id: UUID
     value: bool
+
+
+class SessionDateFactory(CallbackData, prefix='FabSessionDate'):
+    date: str
+
+
+class SessionFactory(CallbackData, prefix='FabSesView'):
+    id: UUID
+
 

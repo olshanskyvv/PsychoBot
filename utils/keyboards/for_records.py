@@ -26,7 +26,8 @@ async def get_available_dates_keyboard(cancel_text: str) -> InlineKeyboardMarkup
 
 async def get_available_times_keyboard(date: datetime.date, cancel_text: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    av_times = await get_available_times_by_date(date)
+    min_time = datetime.datetime.now().time() if date == datetime.date.today() + datetime.timedelta(days=1) else None
+    av_times = await get_available_times_by_date(date, min_time)
     for av_time in av_times:
         time_string = datetime.datetime.strptime(av_time.time, '%H.%M').strftime('%H:%M')
         builder.button(text=time_string,
