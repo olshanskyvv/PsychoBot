@@ -19,7 +19,8 @@ from utils.keyboards.admin.for_services import (
     get_service_action_keyboard,
     get_service_delete_confirm_keyboard,
     get_service_edit_keyboard,
-    get_benefit_edit_keyboard
+    get_benefit_edit_keyboard,
+    get_service_cancel_keyboard
 )
 from utils.callback_factories import (
     ServiceCallbackFactory,
@@ -41,7 +42,9 @@ async def services_command_handler(message: Message) -> None:
 
 
 @router.callback_query(Text('admin_service_restart'))
-async def service_restart_handler(callback: CallbackQuery) -> None:
+async def service_restart_handler(callback: CallbackQuery,
+                                  state: FSMContext) -> None:
+    await state.clear()
     await callback.message.edit_text(text=all_services,
                                      reply_markup=await get_services_keyboard())
     await callback.answer()
@@ -55,7 +58,8 @@ async def service_add_handler(callback: CallbackQuery,
     await state.set_data(user_data)
     await state.set_state(ServiceForm.input_name)
 
-    await callback.message.edit_text(text='Введите наименование для услуги')
+    await callback.message.edit_text(text='Введите наименование для услуги',
+                                     reply_markup=get_service_cancel_keyboard())
     await callback.answer()
 
 
@@ -70,7 +74,8 @@ async def service_name_input_handler(message: Message,
 
     await bot.edit_message_text(text=f'{message.text}\n\nВведите стоимость в рублях',
                                 chat_id=message.from_user.id,
-                                message_id=user_data['message_id'])
+                                message_id=user_data['message_id'],
+                                reply_markup=get_service_cancel_keyboard())
     await message.delete()
 
 
@@ -87,7 +92,8 @@ async def service_cost_input_handler(message: Message,
                                      f'Стоимость: {message.text} руб\n\n'
                                      f'Введите длительность в минутах',
                                 chat_id=message.from_user.id,
-                                message_id=user_data['message_id'])
+                                message_id=user_data['message_id'],
+                                reply_markup=get_service_cancel_keyboard())
     await message.delete()
 
 
@@ -201,7 +207,7 @@ async def service_edit_field_handler(callback: CallbackQuery,
     await state.set_state(ServiceEdit.input_value)
 
     await callback.message.edit_text(text="Введите желаемое значение",
-                                     reply_markup=None)
+                                     reply_markup=get_service_cancel_keyboard())
     await callback.answer()
 
 

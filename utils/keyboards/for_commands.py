@@ -46,3 +46,12 @@ def get_profile_confirm_keyboard() -> InlineKeyboardMarkup:
                    callback_data='profile_fill')
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_profile_cancel_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Отмена',
+                   callback_data='profile_cancel')
+    builder.adjust(1)
+    return builder.as_markup()
+

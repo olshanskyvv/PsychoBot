@@ -82,6 +82,15 @@ def get_service_edit_keyboard(service: Service) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def get_service_cancel_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text="Отмена",
+                   callback_data="admin_service_restart")
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+
 def get_benefit_edit_keyboard(need_cancel: bool = True, service_id: UUID = None) -> InlineKeyboardMarkup:
     if not service_id:
         service_id = uuid.uuid4()
