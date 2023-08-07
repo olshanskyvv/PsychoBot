@@ -6,13 +6,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 from db.driver import get_user_by_id, get_service_by_id, add_new_session
+from db.using import get_agreement_by_id
 from handlers.recording.prosessing import process_data_callback, process_time_callback
 from templates.recording import (
     profile_is_empty,
     service_choice,
     date_choice,
     get_confirmation_message,
-    record_confirmed
+    record_confirmed, no_agreement
 )
 from utils.keyboards.for_records import get_services_keyboard, get_available_dates_keyboard
 from utils.callback_factories import ServiceCallbackFactory, DateCallbackFactory, TimeCallbackFactory
@@ -23,10 +24,16 @@ router = Router()
 
 @router.callback_query(Text('secondary'))
 async def secondary_session_handler(callback: CallbackQuery, state: FSMContext) -> None:
+    if not await get_agreement_by_id(callback.from_user.id):
+        await callback.message.edit_text(text=no_agreement,
+                                         reply_markup=None)
+        await callback.answer()
+        return
     user = await get_user_by_id(callback.from_user.id)
     if not (user.full_name and user.birth_date):
         await callback.message.edit_text(text=profile_is_empty,
                                          reply_markup=None)
+        await callback.answer()
         return
 
     await state.set_state(SecondaryRecord.choosing_service)
