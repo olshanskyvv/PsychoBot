@@ -17,7 +17,13 @@ from db.models import (
     SessionLiteView,
     SessionFullView
 )
-from utils.callback_factories import TimeCallbackFactory, DateCallbackFactory, ServiceCallbackFactory
+from utils.callback_factories import (
+    TimeCallbackFactory,
+    DateCallbackFactory,
+    ServiceCallbackFactory,
+    NewAvSessionFactory,
+    AvSessionFactory
+)
 
 
 async def get_connection() -> asyncpg.Connection:
@@ -62,17 +68,6 @@ async def add_new_service(service: Service) -> Service:
     """, service.name, service.cost, service.duration, service.is_for_benefit)
     service.id = row.get('id', None)
     return service
-
-
-async def add_new_available_session(av_session: AvailableSession) -> AvailableSession:
-    conn = await get_connection()
-    row = await conn.fetchrow("""
-    insert into available_sessions (date, time_begin)
-    values ($1, $2)
-    returning id
-    """, av_session.date, av_session.time_begin)
-    av_session.id = row.get('id', None)
-    return av_session
 
 
 # TODO: напоминание и ссылка на meet
@@ -328,4 +323,59 @@ async def get_full_session_by_id(session_id: UUID) -> SessionFullView:
     where ss.id = $1
     """, session_id)
     return SessionFullView(**row)
+
+
+async def add_new_av_sessions(new_sessions: NewAvSessionFactory) -> None:
+    first_date = datetime.datetime.fromisoformat(new_sessions.datetime.replace("+", ":"))
+    data = []
+    for i in range(new_sessions.count):
+        cur_date = first_date + datetime.timedelta(hours=i)
+        data.extend((cur_date.date(), cur_date.time()))
+
+    conn = await get_connection()
+    query = f"""
+    insert into available_sessions (date, time_begin)
+    values 
+    {", ".join([f'(${2 * i + 1}, ${2 * i + 2})' for i in range(new_sessions.count)])}
+    on conflict do nothing;
+    """
+    await conn.execute(query, *data)
+
+
+async def get_av_sessions_by_date(date: datetime.date) -> Iterable[AvSessionFactory]:
+    conn = await get_connection()
+    rows = await conn.fetch("""
+    select
+        av.id,
+        av.time_begin as time
+    from available_sessions as av
+    where av.date = $1
+    order by av.time_begin
+    """, date)
+    return map(lambda row: AvSessionFactory(id=row['id'],
+                                            time=row['time'].strftime('%H.%M')), rows)
+
+
+async def delete_av_session_if_not_in_use(id: UUID) -> bool:
+    conn = await get_connection()
+    row = await conn.fetchrow('''
+    select exists(
+        select
+            *
+        from sessions
+        where available_session_id = $1
+    );
+    ''', id)
+    is_in_use = row['exists']
+    if is_in_use:
+        return False
+
+    await conn.execute('''
+    delete from available_sessions
+    where id = $1;
+    ''', id)
+    return True
+
+
+
 

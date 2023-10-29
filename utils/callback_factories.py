@@ -67,3 +67,24 @@ class SessionFactory(CallbackData, prefix='FabSesView'):
     id: UUID
 
 
+class AvSessionDateFactory(CallbackData, prefix="FabAvDate"):
+    date: str
+
+
+class NewAvTimeFactory(CallbackData, prefix="FabNewTime"):
+    date: str
+    time: str
+
+
+class NewAvSessionFactory(CallbackData, prefix="FabNewSession"):
+    datetime: str
+    count: int
+
+
+class AvSessionFactory(CallbackData, prefix='FabAvSes'):
+    id: UUID
+    time: str
+
+
+class AvSessionDeleteFactory(CallbackData, prefix='FabAvSesDel'):
+    id: UUID

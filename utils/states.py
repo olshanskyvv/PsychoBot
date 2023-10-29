@@ -35,3 +35,9 @@ class ServiceForm(StatesGroup):
     input_cost = State()
     input_duration = State()
     input_benefit = State()
+
+
+class AdminAvView(StatesGroup):
+    choose_date = State()
+
+

@@ -73,3 +73,19 @@ join bot_users bu on ss.bot_user_id = bu.telegram_id
 join services s on s.id = ss.service_id
 join available_sessions av on av.id = ss.available_session_id
 where ss.id = $1;
+
+
+select
+    av.id,
+    av.time_begin
+from available_sessions as av
+where av.date = $1
+order by av.time_begin;
+
+
+select exists(
+select
+    *
+from sessions
+where available_session_id = '65d0c392-16eb-4280-83b3-6c4da4948f0'
+);

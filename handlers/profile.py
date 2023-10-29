@@ -1,6 +1,6 @@
 import datetime
 
-from aiogram import Router, Bot
+from aiogram import Router
 from aiogram.filters import Command, Text
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery

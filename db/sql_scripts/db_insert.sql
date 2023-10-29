@@ -34,3 +34,10 @@ insert into sessions (bot_user_id, service_id, available_session_id)
 values ($1, $2, $3)
 returning id;
 
+
+insert into available_sessions (date, time_begin)
+values ('2023-10-29', '17:00'),
+       ('2023-10-29', '18:00'),
+       ('2023-10-29', '18:00')
+on conflict do nothing;
+
