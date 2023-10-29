@@ -19,19 +19,21 @@ async def set_commands() -> None:
                        description='Запуск бота и доступные команды'),
             BotCommand(command='agreement',
                        description='Пользовательское соглашение'),
+        ]
+    client_commands = [
             BotCommand(command='profile',
                        description='Просмотр и заполнение персональных данных'),
             BotCommand(command='session',
                        description='Просмотр, подтверждение, перенос и отмена текущей сессии'),
             BotCommand(command='new_session',
                        description='Планирование новой сессии'),
-        ]
+    ]
     await bot.set_my_commands(
-        default_commands,
+        [*default_commands, *client_commands],
         BotCommandScopeDefault()
     )
     # Set admin commands
-    admin_commands = [
+    owner_commands = [
         BotCommand(command='sessions',
                    description='Просмотр ближайших сессий'),
         BotCommand(command='services',
@@ -40,12 +42,12 @@ async def set_commands() -> None:
                    description='Просмотр и изменение сетки расписания'),
     ]
     await bot.set_my_commands(
-        [*default_commands, *admin_commands],
+        [*default_commands, *client_commands, *owner_commands],
         # [*default_commands],
         BotCommandScopeChat(chat_id=ADMIN_ID)
     )
     await bot.set_my_commands(
-        [*default_commands, *admin_commands],
+        [*default_commands, *owner_commands],
         # [*default_commands],
         BotCommandScopeChat(chat_id=OWNER_ID)
     )
