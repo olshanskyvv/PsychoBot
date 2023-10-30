@@ -3,11 +3,12 @@ import logging
 
 from aiogram import Dispatcher
 from aiogram.types import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
+from aiogram.fsm.storage.redis import RedisStorage, Redis
 
 import handlers
 from db import driver
 from utils import bot
-from config import ADMIN_ID, OWNER_ID
+from config import ADMIN_ID, OWNER_ID, REDIS_HOST, REDIS_PORT
 
 logging.basicConfig(level=logging.INFO)
 
@@ -54,7 +55,13 @@ async def set_commands() -> None:
 
 
 async def main() -> None:
-    dp = Dispatcher()
+    storage = RedisStorage(redis=Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT
+    ))
+
+    # dp = Dispatcher()
+    dp = Dispatcher(storage=storage)
     dp.include_router(handlers.router)
 
     await set_commands()
