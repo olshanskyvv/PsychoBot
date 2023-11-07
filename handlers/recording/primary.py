@@ -19,7 +19,8 @@ from utils.keyboards.for_records import (
     get_available_dates_keyboard
 )
 from db.using import add_new_primary_session
-from utils.scheduling.job_builders import confirm_checking_job, get_confirm_check_time
+from utils.scheduling.job_builders import confirm_checking_job, get_confirm_check_time, session_alert_job, \
+    get_alert_time
 
 router = Router()
 
@@ -67,9 +68,12 @@ async def primary_confirm_handler(callback: CallbackQuery,
     user_data = await state.get_data()
     session_id = await add_new_primary_session(callback.from_user.id, user_data['uuid'])
 
-    checking_time = await get_confirm_check_time(UUID(user_data['uuid']))
-    scheduler.add_job(confirm_checking_job, 'date',
-                      args=[session_id], run_date=checking_time)
+    av_session_id = UUID(user_data['uuid'])
+    alert_time = await get_alert_time(av_session_id)
+    scheduler.add_job(session_alert_job,
+                      trigger='date',
+                      args=[session_id],
+                      run_date=alert_time)
     await state.clear()
 
     await callback.message.edit_text(text=record_confirmed,

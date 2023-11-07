@@ -391,5 +391,11 @@ async def delete_av_session_if_not_in_use(id: UUID) -> bool:
     return True
 
 
-
+async def set_confirmed_session_by_id(id: UUID, is_confirmed: bool = True) -> None:
+    conn = await get_connection()
+    await conn.execute('''
+    update sessions
+    set is_confirmed = $1
+    where id = $2;
+    ''', is_confirmed, id)
 

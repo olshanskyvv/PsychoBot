@@ -2,13 +2,16 @@ from aiogram import Router
 from aiogram.filters import Command, Text
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from magic_filter import F
 
 from db.driver import (
     get_users_nearest_session,
     delete_session_by_id,
-    update_av_session_by_id
+    update_av_session_by_id,
+    set_confirmed_session_by_id
 )
+from db.models import UUID
 from handlers.recording.prosessing import process_data_callback, process_time_callback
 from templates.session import (
     no_sessions,
@@ -32,6 +35,7 @@ from utils.callback_factories import (
     DateCallbackFactory,
     TimeCallbackFactory
 )
+from utils.scheduling.job_builders import get_alert_time, session_alert_job
 from utils.states import SessionMove
 
 router = Router()
@@ -90,7 +94,7 @@ async def session_move_date_handler(callback: CallbackQuery,
                                     state: FSMContext) -> None:
     await state.set_state(SessionMove.choosing_date)
     user_data = await state.get_data()
-    user_data['session_id'] = callback_data.id
+    user_data['session_id'] = str(callback_data.id)
     user_data['duration'] = callback_data.duration
     await state.set_data(user_data)
 
@@ -130,10 +134,19 @@ async def session_move_time_handler(callback: CallbackQuery,
 @router.callback_query(SessionMove.confirm,
                        Text('recording_confirm'))
 async def session_move_confirm_handler(callback: CallbackQuery,
-                                       state: FSMContext) -> None:
+                                       state: FSMContext,
+                                       scheduler: AsyncIOScheduler) -> None:
     user_data = await state.get_data()
     await update_av_session_by_id(user_data['session_id'],
                                   user_data['uuid'])
+    av_session_id = UUID(user_data['uuid'])
+    session_id = UUID(user_data['session_id'])
+    alert_time = await get_alert_time(av_session_id)
+    scheduler.add_job(session_alert_job,
+                      trigger='date',
+                      args=[session_id],
+                      run_date=alert_time)
+
     session = await get_users_nearest_session(callback.from_user.id)
     await state.clear()
 
@@ -141,4 +154,16 @@ async def session_move_confirm_handler(callback: CallbackQuery,
                                      reply_markup=get_session_info_keyboard(session))
 
     await callback.answer(text='Сессия успешно перенесена',
+                          show_alert=True)
+
+
+@router.callback_query(SessionActionFactory.filter(F.action == SessionAction.PAY))
+async def pay_handler(callback: CallbackQuery,
+                      callback_data: SessionActionFactory) -> None:
+    await set_confirmed_session_by_id(callback_data.id,
+                                      True)
+    session = await get_users_nearest_session(callback.from_user.id)
+    await callback.message.edit_text(text=get_session_info_message(session),
+                                     reply_markup=get_session_info_keyboard(session))
+    await callback.answer(text='Запись подтверждена',
                           show_alert=True)

@@ -20,3 +20,7 @@ where id = $1;
 update services
 set $1 = $2
 where id = $3;
+
+update sessions
+set is_confirmed = $1
+where id = $2;
