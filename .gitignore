@@ -3,7 +3,8 @@
 
 .env
 poetry.lock
-
+credentials.json
+token.pickle
 
 *.drawio
 *.drawio.bkp
