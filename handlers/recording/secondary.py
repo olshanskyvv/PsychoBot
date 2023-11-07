@@ -20,7 +20,8 @@ from templates.recording import (
 from utils.keyboards.for_records import get_services_keyboard, get_available_dates_keyboard
 from utils.callback_factories import ServiceCallbackFactory, DateCallbackFactory, TimeCallbackFactory
 from utils.states import SecondaryRecord
-from utils.scheduling.job_builders import confirm_checking_job, get_confirm_check_time
+from utils.scheduling.job_builders import confirm_checking_job, get_confirm_check_time, session_alert_job, \
+    get_alert_time
 
 router = Router()
 
@@ -97,9 +98,15 @@ async def secondary_confirm_handler(callback: CallbackQuery,
     session_id = await add_new_session(callback.from_user.id,
                                        UUID(user_data['service_id']),
                                        UUID(user_data['uuid']))
-
-    checking_time = await get_confirm_check_time(UUID(user_data['uuid']))
-    scheduler.add_job(confirm_checking_job, 'date', args=[session_id], run_date=checking_time)
+    av_session_id = UUID(user_data['uuid'])
+    checking_time = await get_confirm_check_time(av_session_id)
+    alert_time = await get_alert_time(av_session_id)
+    scheduler.add_job(confirm_checking_job, 'date',
+                      args=[session_id], run_date=checking_time)
+    scheduler.add_job(session_alert_job,
+                      trigger='date',
+                      args=[session_id],
+                      run_date=alert_time)
 
     await state.clear()
 

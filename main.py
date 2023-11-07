@@ -68,7 +68,7 @@ async def main() -> None:
 
     scheduler = AsyncIOScheduler(timezone="Europe/Moscow", jobstores=job_stores)
     scheduler.start()
-    # scheduler.remove_all_jobs()
+    scheduler.remove_all_jobs()
 
     dp = Dispatcher(storage=storage)
     dp.callback_query.middleware.register(ScheduleCallbackMiddleware(scheduler))

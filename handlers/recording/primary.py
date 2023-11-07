@@ -68,7 +68,8 @@ async def primary_confirm_handler(callback: CallbackQuery,
     session_id = await add_new_primary_session(callback.from_user.id, user_data['uuid'])
 
     checking_time = await get_confirm_check_time(UUID(user_data['uuid']))
-    scheduler.add_job(confirm_checking_job, 'date', args=[session_id], run_date=checking_time)
+    scheduler.add_job(confirm_checking_job, 'date',
+                      args=[session_id], run_date=checking_time)
     await state.clear()
 
     await callback.message.edit_text(text=record_confirmed,

@@ -114,6 +114,18 @@ async def get_available_sessions_by_id(av_session_id: UUID) -> AvailableSession:
 
 async def get_session_by_id(session_id: UUID) -> Optional[Session]:
     conn = await get_connection()
+    row = await conn.fetchrow('''
+    select exists(
+        select
+            *
+        from sessions
+        where id = $1
+    );
+    ''', session_id)
+    is_exist = row['exists']
+    if not is_exist:
+        return None
+
     row = await conn.fetchrow("""
     select * from sessions where id = $1
     """, session_id)
