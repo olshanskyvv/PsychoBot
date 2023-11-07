@@ -11,6 +11,7 @@ aiogram = {git = "https://github.com/aiogram/aiogram.git", tag = "v3.0.0b7"}
 asyncpg = "^0.28.0"
 python-dotenv = "^1.0.0"
 redis = "^5.0.1"
+apscheduler = "^3.10.4"
 
 
 [build-system]

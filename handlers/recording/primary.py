@@ -4,7 +4,9 @@ from aiogram import Router
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from db.models import UUID
 from handlers.recording.prosessing import process_data_callback, process_time_callback
 from utils.callback_factories import DateCallbackFactory, TimeCallbackFactory
 from utils.states import PrimaryRecord
@@ -17,6 +19,7 @@ from utils.keyboards.for_records import (
     get_available_dates_keyboard
 )
 from db.using import add_new_primary_session
+from utils.scheduling.job_builders import confirm_checking_job, get_confirm_check_time
 
 router = Router()
 
@@ -59,9 +62,13 @@ async def primary_time_handler(callback: CallbackQuery,
 @router.callback_query(PrimaryRecord.confirm,
                        Text('recording_confirm'))
 async def primary_confirm_handler(callback: CallbackQuery,
-                                  state: FSMContext) -> None:
+                                  state: FSMContext,
+                                  scheduler: AsyncIOScheduler) -> None:
     user_data = await state.get_data()
-    await add_new_primary_session(callback.from_user.id, user_data['uuid'])
+    session_id = await add_new_primary_session(callback.from_user.id, user_data['uuid'])
+
+    checking_time = await get_confirm_check_time(UUID(user_data['uuid']))
+    scheduler.add_job(confirm_checking_job, 'date', args=[session_id], run_date=checking_time)
     await state.clear()
 
     await callback.message.edit_text(text=record_confirmed,

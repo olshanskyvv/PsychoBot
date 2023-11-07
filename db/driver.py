@@ -35,13 +35,13 @@ async def get_connection() -> asyncpg.Connection:
     return get_connection.connection
 
 
-async def _async_close_connection() -> None:
+async def async_close_connection() -> None:
     await (await get_connection()).close()
     logging.info('DB closed')
 
 
 def close_connection() -> None:
-    asyncio.run(_async_close_connection())
+    asyncio.run(async_close_connection())
 
 
 async def init_db_if_empty() -> None:
@@ -112,11 +112,13 @@ async def get_available_sessions_by_id(av_session_id: UUID) -> AvailableSession:
     return AvailableSession(**row)
 
 
-async def get_session_by_id(session_id: UUID) -> Session:
+async def get_session_by_id(session_id: UUID) -> Optional[Session]:
     conn = await get_connection()
     row = await conn.fetchrow("""
     select * from sessions where id = $1
     """, session_id)
+    if not row:
+        return None
     bot_user = await get_user_by_id(row['bot_user_id'])
     service = await get_service_by_id(row['service_id'])
     av_session = await get_available_sessions_by_id(row['available_session_id'])

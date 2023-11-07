@@ -4,11 +4,15 @@ import logging
 from aiogram import Dispatcher
 from aiogram.types import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
 from aiogram.fsm.storage.redis import RedisStorage, Redis
+from apscheduler.jobstores.redis import RedisJobStore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import handlers
 from db import driver
 from utils import bot
 from config import ADMIN_ID, OWNER_ID, REDIS_HOST, REDIS_PORT
+from utils.scheduling.schedule_middlewares import ScheduleCallbackMiddleware
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -44,12 +48,10 @@ async def set_commands() -> None:
     ]
     await bot.set_my_commands(
         [*default_commands, *client_commands, *owner_commands],
-        # [*default_commands],
         BotCommandScopeChat(chat_id=ADMIN_ID)
     )
     await bot.set_my_commands(
         [*default_commands, *owner_commands],
-        # [*default_commands],
         BotCommandScopeChat(chat_id=OWNER_ID)
     )
 
@@ -60,25 +62,34 @@ async def main() -> None:
         port=REDIS_PORT
     ))
 
-    # dp = Dispatcher()
+    job_stores = {
+        'default': RedisJobStore(host='localhost', port=6379)
+    }
+
+    scheduler = AsyncIOScheduler(timezone="Europe/Moscow", jobstores=job_stores)
+    scheduler.start()
+    # scheduler.remove_all_jobs()
+
     dp = Dispatcher(storage=storage)
+    dp.callback_query.middleware.register(ScheduleCallbackMiddleware(scheduler))
     dp.include_router(handlers.router)
 
     await set_commands()
     await driver.get_connection()
-
-    await dp.start_polling(bot)
-
-
-def run() -> None:
     try:
-        asyncio.run(main())
+        await dp.start_polling(bot)
     except RuntimeError:
         import traceback
 
         logging.warning(traceback.format_exc())
     finally:
-        driver.close_connection()
+        await driver.async_close_connection()
+        scheduler.shutdown()
+        logging.info('Clear')
+
+
+def run() -> None:
+    asyncio.run(main())
 
 
 if __name__ == "__main__":
